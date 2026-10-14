@@ -1,0 +1,34 @@
+{
+  "page": 1,
+  "per_page": 2,
+  "total": 2,
+  "total_pages": 1,
+  "items": [
+    {
+      "name": "Bricolage",
+      "extras": {},
+      "createdAt": "2026-10-14T19:15:28.884496Z",
+      "updatedAt": "2026-10-14T19:15:28.884500Z",
+      "groupId": "35d8ed4f-9a94-4d96-b9d3-a6b0ce372bf9",
+      "userId": "4fcf9988-f9eb-43c6-bdf1-e1aa78c75ba9",
+      "id": "4c03d12a-4388-4fb6-b4ce-04954c360b2b",
+      "householdId": "1c3daafc-12d0-408e-a640-6f26b4e1fab4",
+      "recipeReferences": [],
+      "labelSettings": []
+    },
+    {
+      "name": "Courses",
+      "extras": {},
+      "createdAt": "2026-10-14T19:15:28.795759Z",
+      "updatedAt": "2026-10-14T19:16:04.475547Z",
+      "groupId": "35d8ed4f-9a94-4d96-b9d3-a6b0ce372bf9",
+      "userId": "4fcf9988-f9eb-43c6-bdf1-e1aa78c75ba9",
+      "id": "6cfb5367-0651-45f3-b105-5210238236eb",
+      "householdId": "1c3daafc-12d0-408e-a640-6f26b4e1fab4",
+      "recipeReferences": [],
+      "labelSettings": []
+    }
+  ],
+  "next": null,
+  "previous": null
+}

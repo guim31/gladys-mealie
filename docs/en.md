@@ -1,61 +1,194 @@
-# Demo Devices Template
+# Mealie
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+[Mealie](https://mealie.io/) is a self-hosted recipe manager: your recipes, a
+meal plan for the week and shared shopping lists. This integration brings it
+into Gladys: one device shows today's and tomorrow's meals, the number of
+recipes and the items left to buy on each list; scenes can add an item to a
+list ("the milk is finished"), check one, plan a recipe, or send the menu of
+the day; two dashboard widgets show the menu and a shopping list, with buttons
+to add, check and plan from the wall tablet.
 
-## What you get
+Tested against real Mealie 2.0.0 and 3.28 servers; not yet on a real Gladys
+installation: feedback welcome on
+[the issues](https://github.com/guim31/gladys-mealie/issues).
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+## What you need
 
-## Configuration
+- Gladys Assistant 5.2.0 or later.
+- Mealie 2.0 or later (Mealie 1.x has no household API), reachable from the
+  Gladys machine: on the local network, or on the Internet in HTTPS.
+- An API token of a Mealie user. It acts with the rights of that user, on
+  the meal plan and the shopping lists of that user's household.
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
+## Getting started
 
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
+### 1. Create an API token
 
-## Actions
+In Mealie, click your avatar, open your **profile**, then **API Tokens**. Give
+the token a name (for example `Gladys`) and click **Generate**. Copy the token:
+Mealie shows it only once.
 
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+### 2. Configure the integration
+
+In Gladys, **Integrations → Mealie → Configuration**:
+
+- **Mealie address**: the address you open Mealie with, port included, for
+  example `http://192.168.1.2:9925` or `https://mealie.example.com`. An address
+  copied from the browser (`…/g/home/recipes`) works too.
+- **API token**: the token of step 1.
+- **Accept self-signed certificates**: only for an `https://` address whose
+  certificate your browser does not trust either.
+- **Refresh interval**: how often Mealie is read, 5 minutes by default (1 to
+  15 minutes). What you do from Gladys shows at once.
+- **Language of the names and messages**: the language of the feature names
+  and of the texts of the scene actions (French by default).
+
+Save, then click **Test the connection**: Mealie answers with its version, its
+household and what it holds.
+
+### 3. Add the device
+
+In **Integrations → Mealie → Discover**, add the **Mealie** device. Its values
+appear at once. When a shopping list is created in Mealie, the device offers
+**Update** in the Discover tab: its counter is added then.
+
+## The Mealie device
+
+One device per Mealie household (the household of the token's user). Its
+features:
+
+| Feature              | Type    | Value                                                         |
+| -------------------- | ------- | ------------------------------------------------------------- |
+| `Breakfast today`    | Text    | The recipes (or notes) of the meal plan, or "Nothing planned" |
+| `Lunch today`        | Text    | Same                                                          |
+| `Dinner today`       | Text    | Same                                                          |
+| `Breakfast tomorrow` | Text    | Same, for tomorrow                                            |
+| `Lunch tomorrow`     | Text    | Same                                                          |
+| `Dinner tomorrow`    | Text    | Same                                                          |
+| `Recipes`            | Counter | Number of recipes in Mealie                                   |
+| `To buy: <list>`     | Counter | Items still to buy on each shopping list (unchecked)          |
+
+Two recipes for one meal show as `Quiche lorraine · Salad`. "Today" follows the
+time zone of Gladys: right after midnight, tomorrow's meals become today's.
+The names are given in the language of the configuration when the device is
+added, and stay as they are then (a Gladys rule).
+
+## Dashboard widgets
+
+In **Dashboard → Edit dashboard**, add a widget of the **Mealie** integration.
+
+### Meal plan
+
+- **Period: Today**: the date and one row per meal of the day (breakfast,
+  lunch, dinner, side, snack, drink, dessert).
+- **Period: Next 7 days**: one row per day, today and tomorrow marked; tap a
+  day to see its meals.
+- **Plan** opens a short form (recipe, day, meal) and puts the recipe in the
+  Mealie meal plan. An empty recipe lets Mealie pick one at random (its meal
+  plan rules apply). The same recipe already planned for the same meal is not
+  added twice.
+- **Refresh** reads Mealie again.
+- **Open Mealie** opens the meal planner, when Mealie has an `https://`
+  address (Gladys opens no other links).
+
+### Shopping list
+
+The items still to buy on one list (setting **Shopping list**: its name in
+Mealie; empty: the first list created), with their quantity and note.
+
+- **Add** opens a form with one field, **Item**: typed as it should read on
+  the list. An item already on the list (upper case, accents and plural aside)
+  is not added twice.
+- **Check** opens a form listing the items: the chosen one is checked in
+  Mealie, as in its app (unchecking it there undoes it).
+- **Refresh** reads Mealie again.
+- **Open Mealie** opens the list, when Mealie has an `https://` address.
 
 ## Scenes
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
+### Actions
 
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
+| Action                            | Fields                                    | Results                                                        |
+| --------------------------------- | ----------------------------------------- | -------------------------------------------------------------- |
+| **Add to the shopping list**      | Item, Shopping list (empty: the first)    | Item added (yes/no), Item, list, items to buy                  |
+| **Check a shopping list item**    | Item, Shopping list                       | Item checked (yes/no), Item, list, items to buy                |
+| **Add a recipe to the meal plan** | Recipe (empty: random), Day, Meal         | Recipe added (yes/no), Recipe, Date                            |
+| **Get the meals of a day**        | Day (today, tomorrow, day after tomorrow) | Breakfast, Lunch, Dinner, every meal of the day, meals planned |
+| **Get a shopping list**           | Shopping list                             | Items to buy (comma separated), number, list                   |
 
-## Dashboard
+- An item is found the way you say it: `oeufs` finds `Œufs`, `tomatoes`
+  finds `Tomato`. A list is found by its name, or by its beginning (`groc` for
+  `Groceries`).
+- A recipe is found by its name or part of it, like the Mealie search box.
+- An item already on the list is not added again: the result **Item added**
+  is then "no". An item not on the list is not an error: **Item checked** is
+  "no".
+- The results go into the next actions of the scene, for example a message
+  `Tonight: {{0.0.dinner}}` (`0.0`: the position of the action in the scene;
+  the message editor lists the results).
+- The meals snack, drink and dessert need Mealie 3.7 or later; an older Mealie
+  knows breakfast, lunch, dinner and side.
 
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+### Triggers
+
+None. What changes in Mealie (a meal planned, a list growing) is a state of
+the device: a scene starts on a change of `To buy: Groceries` or of
+`Dinner today` with the usual "device state" trigger.
+
+### Scene ideas
+
+- **"The milk is finished"**: a button (or a voice assistant) runs **Add to the
+  shopping list** with `Milk`.
+- **The menu in the morning**: every day at 7:30, **Get the meals of a day**
+  (today), then send `Lunch: {{0.0.lunch}}, dinner: {{0.0.dinner}}` on
+  Telegram.
+- **On the way to the shops**: when someone leaves work, **Get a shopping
+  list**, then send its items if there are some.
+- **No dinner planned yet**: at 17:00, if `Dinner today` is "Nothing planned",
+  **Add a recipe to the meal plan** with no recipe (Mealie picks one), then
+  announce it.
+
+## Refresh and use of the Mealie API
+
+The integration reads Mealie on its own timer (Gladys does not poll it), at
+the interval of the configuration, and right after midnight. One reading is
+four requests: the meal plan of the next seven days, the shopping lists, the
+items to buy of every list (one request), the statistics; "who am I" (version
+and household) is read again once an hour. Mealie sets no API quota. A scene
+action or a widget reads Mealie again when the last reading is older than 30
+seconds; what the integration changes is read again at once.
+
+Only the values that change are sent to Gladys, and every value again every 6
+hours.
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **"API token refused"**: the token was deleted or belongs to another Mealie.
+  Create a new one (step 1).
+- **"Mealie does not answer"**: check the address and the port from the
+  Gladys machine (`http://<address>:9925/api/app/about` must answer). The
+  device badge then shows "unreachable", and its values stay the last ones
+  read.
+- **"certificate refused"**: tick **Accept self-signed certificates**, or use
+  the `http://` address on the local network.
+- **"Mealie 2.0 or later is needed"**: update Mealie.
+- **"no Mealie at this address"**: the address answers with another web page
+  (a reverse proxy login page…). Use the address of Mealie itself.
+- **A list has no counter**: open the Discover tab and click **Update** on the
+  Mealie device.
+- **More details**: set the `LOG_LEVEL` environment variable to `debug`; the
+  logs never contain the API token.
+
+## Limits
+
+- One Mealie household per integration: the household of the token's user.
+- The device shows breakfast, lunch and dinner of today and tomorrow; the
+  other meals (side, snack, drink, dessert) and the rest of the week are in the
+  widget and in **Get the meals of a day**.
+- Items are added as free text (Mealie does not parse their quantity), and are
+  never deleted: checked items stay in Mealie until you clear them there.
+- The **Check** form lists the first 50 items; the widget shows 7 items and
+  the number of the others.
+- **Open Mealie** appears only for an `https://` address.
+- Not tested on a real Gladys installation yet; tested against real Mealie
+  2.0.0 and 3.28 servers.

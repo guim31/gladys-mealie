@@ -30,6 +30,26 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+What the integration handles:
+
+- **Secrets**: the Mealie API token is a `secret` field of the Gladys
+  configuration. The integration reads it from Gladys at startup, keeps it in
+  memory, sends it only to the Mealie address of the configuration (an
+  `Authorization: Bearer` header), and never writes it to `/data` nor to the
+  logs. The token acts with the rights of the Mealie user who created it: give
+  it to a user without administrator rights if you can.
+- **Stored in `/data`**: nothing. Everything is read again from Mealie and
+  Gladys after a restart.
+- **Writes to Mealie**: an item added to a shopping list, an item checked, a
+  recipe added to the meal plan — from a scene action or a dashboard button.
+  Nothing is ever deleted. A dashboard button can be used by any user of
+  Gladys who sees the dashboard.
+- **Network**: requests go only to the Mealie address typed in the
+  configuration, in HTTP or HTTPS. HTTPS certificates are verified unless the
+  user ticks "Accept self-signed certificates"; the integration opens no port
+  and calls no cloud service.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+Mealie itself (see its
+[security policy](https://github.com/mealie-recipes/mealie/security/policy)).

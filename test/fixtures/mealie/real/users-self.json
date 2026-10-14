@@ -1,0 +1,21 @@
+{
+  "id": "4fcf9988-f9eb-43c6-bdf1-e1aa78c75ba9",
+  "username": "admin",
+  "fullName": "Change Me",
+  "email": "changeme@example.com",
+  "authMethod": "Mealie",
+  "admin": true,
+  "group": "Home",
+  "household": "Family",
+  "advanced": true,
+  "showAnnouncements": true,
+  "lastReadAnnouncement": null,
+  "canInvite": true,
+  "canManage": true,
+  "canManageHousehold": true,
+  "canOrganize": true,
+  "groupId": "35d8ed4f-9a94-4d96-b9d3-a6b0ce372bf9",
+  "groupSlug": "home",
+  "householdId": "1c3daafc-12d0-408e-a640-6f26b4e1fab4",
+  "householdSlug": "family"
+}

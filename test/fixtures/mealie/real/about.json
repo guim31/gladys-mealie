@@ -1,0 +1,14 @@
+{
+  "production": false,
+  "version": "develop",
+  "demoStatus": false,
+  "allowSignup": false,
+  "allowPasswordLogin": true,
+  "defaultGroupSlug": null,
+  "defaultHouseholdSlug": null,
+  "enableOidc": false,
+  "oidcRedirect": false,
+  "oidcProviderName": "OAuth",
+  "tokenTime": 48,
+  "allowedIframeHosts": ["youtube.com", "youtube-nocookie.com", "vimeo.com", "player.vimeo.com"]
+}
