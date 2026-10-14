@@ -1,177 +1,930 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Mealie",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Your Mealie meal plan and shopping lists in Gladys: menus, scenes and widgets.",
+    "fr": "Le planning des repas et les listes de courses de Mealie dans Gladys.",
+    "de": "Essensplan und Einkaufslisten von Mealie in Gladys: Menüs, Szenen, Widgets.",
+    "es": "El menú y las listas de la compra de Mealie en Gladys: escenas y widgets."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
-  "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "docker_image": "ghcr.io/guim31/gladys-mealie:1.0.0",
+  "gladys_version": ">=5.2.0",
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-mealie/main/cover.png",
+  "categories": ["services"],
+  "transports": ["local"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your Mealie",
+        "fr": "Votre Mealie",
+        "de": "Dein Mealie",
+        "es": "Su Mealie"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "In Mealie, open your profile, then API Tokens, generate a token and paste it below with the address of Mealie. Then add the Mealie device from the Discover tab.",
+        "fr": "Dans Mealie, ouvrez votre profil, puis Jetons de l'API, générez un jeton et collez-le ci-dessous avec l'adresse de Mealie. Ajoutez ensuite l'appareil Mealie depuis l'onglet Découverte.",
+        "de": "Öffne in Mealie dein Profil, dann API-Token, erzeuge ein Token und füge es unten mit der Adresse von Mealie ein. Lege dann das Gerät Mealie im Tab „Entdecken“ an.",
+        "es": "En Mealie, abra su perfil y luego API Tokens, genere un token y péguelo abajo con la dirección de Mealie. Después, añada el dispositivo Mealie desde la pestaña Descubrir."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/guim31/gladys-mealie/blob/main/docs/en.md",
+          "label": {
+            "en": "Setup guide",
+            "fr": "Guide d'installation",
+            "de": "Installationsanleitung",
+            "es": "Guía de instalación"
+          }
+        },
+        {
+          "url": "https://docs.mealie.io/documentation/getting-started/api-usage/",
+          "label": {
+            "en": "Mealie API tokens",
+            "fr": "Jetons d'API de Mealie",
+            "de": "API-Token von Mealie",
+            "es": "Tokens de API de Mealie"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "url",
+      "type": "string",
+      "label": {
+        "en": "Mealie address",
+        "fr": "Adresse de Mealie",
+        "de": "Adresse von Mealie",
+        "es": "Dirección de Mealie"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "description": {
+        "en": "The address you open Mealie with, port included (9925 by default with Docker).",
+        "fr": "L'adresse avec laquelle vous ouvrez Mealie, port compris (9925 par défaut avec Docker).",
+        "de": "Die Adresse, mit der du Mealie öffnest, mit Port (mit Docker standardmäßig 9925).",
+        "es": "La dirección con la que abre Mealie, puerto incluido (9925 por defecto con Docker)."
+      },
+      "placeholder": {
+        "en": "e.g. http://192.168.1.2:9925",
+        "fr": "ex. http://192.168.1.2:9925",
+        "de": "z. B. http://192.168.1.2:9925",
+        "es": "p. ej. http://192.168.1.2:9925"
+      },
+      "required": true
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "api_token",
+      "type": "secret",
+      "label": {
+        "en": "API token",
+        "fr": "Jeton d'API",
+        "de": "API-Token",
+        "es": "Token de API"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "Created in Mealie: profile → API Tokens → Generate. It acts with the rights of your user.",
+        "fr": "Créé dans Mealie : profil → Jetons de l'API → Générer. Il agit avec les droits de votre utilisateur.",
+        "de": "Erstellt in Mealie: Profil → API-Token → Erzeugen. Es handelt mit den Rechten deines Benutzers.",
+        "es": "Creado en Mealie: perfil → API Tokens → Generar. Actúa con los permisos de su usuario."
+      },
+      "required": true
     },
     {
-      "key": "unit",
-      "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "key": "allow_self_signed",
+      "type": "boolean",
+      "label": {
+        "en": "Accept self-signed certificates",
+        "fr": "Accepter les certificats auto-signés",
+        "de": "Selbstsignierte Zertifikate akzeptieren",
+        "es": "Aceptar certificados autofirmados"
+      },
+      "description": {
+        "en": "Only for an https:// address whose certificate your browser does not trust either.",
+        "fr": "Seulement pour une adresse en https:// dont le certificat n'est pas reconnu non plus par votre navigateur.",
+        "de": "Nur für eine https://-Adresse, deren Zertifikat auch dein Browser nicht anerkennt.",
+        "es": "Solo para una dirección https:// cuyo certificado tampoco reconoce su navegador."
+      },
       "required": false,
-      "default": "celsius",
+      "default": false
+    },
+    {
+      "key": "poll_interval",
+      "type": "select",
+      "label": {
+        "en": "Refresh interval",
+        "fr": "Intervalle de rafraîchissement",
+        "de": "Aktualisierungsintervall",
+        "es": "Intervalo de actualización"
+      },
+      "description": {
+        "en": "How often Mealie is read. Gladys' own changes show at once.",
+        "fr": "Fréquence de lecture de Mealie. Les changements faits depuis Gladys s'affichent tout de suite.",
+        "de": "Wie oft Mealie gelesen wird. Änderungen aus Gladys erscheinen sofort.",
+        "es": "Frecuencia de lectura de Mealie. Los cambios hechos desde Gladys se ven al instante."
+      },
+      "required": false,
+      "default": "300",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "60",
+          "label": {
+            "en": "1 minute",
+            "fr": "1 minute",
+            "de": "1 Minute",
+            "es": "1 minuto"
+          }
+        },
+        {
+          "value": "120",
+          "label": {
+            "en": "2 minutes",
+            "fr": "2 minutes",
+            "de": "2 Minuten",
+            "es": "2 minutos"
+          }
+        },
+        {
+          "value": "300",
+          "label": {
+            "en": "5 minutes",
+            "fr": "5 minutes",
+            "de": "5 Minuten",
+            "es": "5 minutos"
+          }
+        },
+        {
+          "value": "600",
+          "label": {
+            "en": "10 minutes",
+            "fr": "10 minutes",
+            "de": "10 Minuten",
+            "es": "10 minutos"
+          }
+        },
+        {
+          "value": "900",
+          "label": {
+            "en": "15 minutes",
+            "fr": "15 minutes",
+            "de": "15 Minuten",
+            "es": "15 minutos"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the names and messages",
+        "fr": "Langue des noms et des messages",
+        "de": "Sprache der Namen und Meldungen",
+        "es": "Idioma de los nombres y mensajes"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Names of the features (set when the device is added) and texts of the scene actions.",
+        "fr": "Noms des fonctionnalités (fixés à l'ajout de l'appareil) et textes des actions de scène.",
+        "de": "Namen der Funktionen (beim Anlegen des Geräts festgelegt) und Texte der Szenen-Aktionen.",
+        "es": "Nombres de las funciones (fijados al añadir el dispositivo) y textos de las acciones de escena."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "English",
+            "de": "English",
+            "es": "English"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "Français",
+            "fr": "Français",
+            "de": "Français",
+            "es": "Français"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "Deutsch",
+            "fr": "Deutsch",
+            "de": "Deutsch",
+            "es": "Deutsch"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Español",
+            "fr": "Español",
+            "de": "Español",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
-    }
-  ],
-  "scene_triggers": [
-    {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
-      "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
       },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
-        }
-      ],
-      "variables": [
-        {
-          "key": "target",
-          "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
-        }
-      ]
+      "timeout_seconds": 30
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "add_shopping_item",
+      "label": {
+        "en": "Add to the shopping list",
+        "fr": "Ajouter à la liste de courses",
+        "de": "Zur Einkaufsliste hinzufügen",
+        "es": "Añadir a la lista de la compra"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "Adds an item to a Mealie shopping list, unless it is already on it.",
+        "fr": "Ajoute un article à une liste de courses Mealie, sauf s'il y est déjà.",
+        "de": "Fügt einen Eintrag zu einer Einkaufsliste von Mealie hinzu, außer er steht schon darauf.",
+        "es": "Añade un artículo a una lista de la compra de Mealie, salvo si ya está en ella."
+      },
+      "timeout_seconds": 20,
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
+          "key": "item",
+          "type": "string",
+          "label": {
+            "en": "Item",
+            "fr": "Article",
+            "de": "Eintrag",
+            "es": "Artículo"
+          },
+          "description": {
+            "en": "As it should read on the list.",
+            "fr": "Tel qu'il doit s'afficher sur la liste.",
+            "de": "So, wie er auf der Liste stehen soll.",
+            "es": "Tal como debe aparecer en la lista."
+          },
+          "placeholder": {
+            "en": "e.g. Milk",
+            "fr": "ex. Lait",
+            "de": "z. B. Milch",
+            "es": "p. ej. Leche"
+          },
           "required": true
+        },
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Shopping list",
+            "fr": "Liste de courses",
+            "de": "Einkaufsliste",
+            "es": "Lista de la compra"
+          },
+          "description": {
+            "en": "Its name in Mealie. Empty: the first list created.",
+            "fr": "Son nom dans Mealie. Vide : la première liste créée.",
+            "de": "Der Name der Liste in Mealie. Leer: die zuerst erstellte Liste.",
+            "es": "Su nombre en Mealie. Vacío: la primera lista creada."
+          },
+          "placeholder": {
+            "en": "e.g. Groceries",
+            "fr": "ex. Courses",
+            "de": "z. B. Einkäufe",
+            "es": "p. ej. Compras"
+          },
+          "required": false
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
+          "key": "added",
           "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "label": {
+            "en": "Item added",
+            "fr": "Article ajouté",
+            "de": "Eintrag hinzugefügt",
+            "es": "Artículo añadido"
+          }
+        },
+        {
+          "key": "item",
+          "type": "string",
+          "label": {
+            "en": "Item",
+            "fr": "Article",
+            "de": "Eintrag",
+            "es": "Artículo"
+          }
+        },
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Shopping list",
+            "fr": "Liste de courses",
+            "de": "Einkaufsliste",
+            "es": "Lista de la compra"
+          }
+        },
+        {
+          "key": "to_buy",
+          "type": "number",
+          "label": {
+            "en": "Items to buy",
+            "fr": "Articles à acheter",
+            "de": "Einträge zu kaufen",
+            "es": "Artículos por comprar"
+          }
+        }
+      ]
+    },
+    {
+      "key": "check_shopping_item",
+      "label": {
+        "en": "Check a shopping list item",
+        "fr": "Cocher un article de la liste de courses",
+        "de": "Eintrag der Einkaufsliste abhaken",
+        "es": "Marcar un artículo de la lista de la compra"
+      },
+      "description": {
+        "en": "Checks an item still to buy, as in the Mealie app (unchecking it there undoes it).",
+        "fr": "Coche un article encore à acheter, comme dans l'appli Mealie (le décocher là-bas l'annule).",
+        "de": "Hakt einen noch zu kaufenden Eintrag ab, wie in der Mealie-App (dort abwählen macht es rückgängig).",
+        "es": "Marca un artículo aún por comprar, como en la app de Mealie (desmarcarlo allí lo deshace)."
+      },
+      "timeout_seconds": 20,
+      "fields": [
+        {
+          "key": "item",
+          "type": "string",
+          "label": {
+            "en": "Item",
+            "fr": "Article",
+            "de": "Eintrag",
+            "es": "Artículo"
+          },
+          "description": {
+            "en": "Its name on the list, upper case and accents ignored.",
+            "fr": "Son nom sur la liste, sans tenir compte des majuscules ni des accents.",
+            "de": "Sein Name auf der Liste, Groß- und Kleinschreibung und Akzente egal.",
+            "es": "Su nombre en la lista, sin tener en cuenta mayúsculas ni acentos."
+          },
+          "placeholder": {
+            "en": "e.g. Milk",
+            "fr": "ex. Lait",
+            "de": "z. B. Milch",
+            "es": "p. ej. Leche"
+          },
+          "required": true
+        },
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Shopping list",
+            "fr": "Liste de courses",
+            "de": "Einkaufsliste",
+            "es": "Lista de la compra"
+          },
+          "description": {
+            "en": "Its name in Mealie. Empty: the first list created.",
+            "fr": "Son nom dans Mealie. Vide : la première liste créée.",
+            "de": "Der Name der Liste in Mealie. Leer: die zuerst erstellte Liste.",
+            "es": "Su nombre en Mealie. Vacío: la primera lista creada."
+          },
+          "placeholder": {
+            "en": "e.g. Groceries",
+            "fr": "ex. Courses",
+            "de": "z. B. Einkäufe",
+            "es": "p. ej. Compras"
+          },
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "checked",
+          "type": "boolean",
+          "label": {
+            "en": "Item checked",
+            "fr": "Article coché",
+            "de": "Eintrag abgehakt",
+            "es": "Artículo marcado"
+          }
+        },
+        {
+          "key": "item",
+          "type": "string",
+          "label": {
+            "en": "Item",
+            "fr": "Article",
+            "de": "Eintrag",
+            "es": "Artículo"
+          }
+        },
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Shopping list",
+            "fr": "Liste de courses",
+            "de": "Einkaufsliste",
+            "es": "Lista de la compra"
+          }
+        },
+        {
+          "key": "to_buy",
+          "type": "number",
+          "label": {
+            "en": "Items to buy",
+            "fr": "Articles à acheter",
+            "de": "Einträge zu kaufen",
+            "es": "Artículos por comprar"
+          }
+        }
+      ]
+    },
+    {
+      "key": "add_to_meal_plan",
+      "label": {
+        "en": "Add a recipe to the meal plan",
+        "fr": "Ajouter une recette au planning des repas",
+        "de": "Rezept zum Essensplan hinzufügen",
+        "es": "Añadir una receta al menú"
+      },
+      "description": {
+        "en": "Plans a Mealie recipe for a meal; with no recipe, Mealie picks one at random.",
+        "fr": "Prévoit une recette Mealie pour un repas ; sans recette, Mealie en choisit une au hasard.",
+        "de": "Plant ein Mealie-Rezept für eine Mahlzeit; ohne Rezept wählt Mealie zufällig eins.",
+        "es": "Prevé una receta de Mealie para una comida; sin receta, Mealie elige una al azar."
+      },
+      "timeout_seconds": 20,
+      "fields": [
+        {
+          "key": "recipe",
+          "type": "string",
+          "label": {
+            "en": "Recipe",
+            "fr": "Recette",
+            "de": "Rezept",
+            "es": "Receta"
+          },
+          "description": {
+            "en": "Its name, or part of it. Empty: a random recipe.",
+            "fr": "Son nom, ou une partie. Vide : une recette au hasard.",
+            "de": "Sein Name oder ein Teil davon. Leer: ein zufälliges Rezept.",
+            "es": "Su nombre, o parte de él. Vacío: una receta al azar."
+          },
+          "placeholder": {
+            "en": "e.g. Lasagna",
+            "fr": "ex. Lasagnes",
+            "de": "z. B. Lasagne",
+            "es": "p. ej. Lasaña"
+          },
+          "required": false
+        },
+        {
+          "key": "day",
+          "type": "select",
+          "label": {
+            "en": "Day",
+            "fr": "Jour",
+            "de": "Tag",
+            "es": "Día"
+          },
+          "required": true,
+          "default": "today",
+          "options": [
+            {
+              "value": "today",
+              "label": {
+                "en": "Today",
+                "fr": "Aujourd'hui",
+                "de": "Heute",
+                "es": "Hoy"
+              }
+            },
+            {
+              "value": "tomorrow",
+              "label": {
+                "en": "Tomorrow",
+                "fr": "Demain",
+                "de": "Morgen",
+                "es": "Mañana"
+              }
+            },
+            {
+              "value": "day_after_tomorrow",
+              "label": {
+                "en": "Day after tomorrow",
+                "fr": "Après-demain",
+                "de": "Übermorgen",
+                "es": "Pasado mañana"
+              }
+            }
+          ]
+        },
+        {
+          "key": "meal",
+          "type": "select",
+          "label": {
+            "en": "Meal",
+            "fr": "Repas",
+            "de": "Mahlzeit",
+            "es": "Comida"
+          },
+          "required": true,
+          "default": "dinner",
+          "options": [
+            {
+              "value": "breakfast",
+              "label": {
+                "en": "Breakfast",
+                "fr": "Petit-déjeuner",
+                "de": "Frühstück",
+                "es": "Desayuno"
+              }
+            },
+            {
+              "value": "lunch",
+              "label": {
+                "en": "Lunch",
+                "fr": "Déjeuner",
+                "de": "Mittagessen",
+                "es": "Comida"
+              }
+            },
+            {
+              "value": "dinner",
+              "label": {
+                "en": "Dinner",
+                "fr": "Dîner",
+                "de": "Abendessen",
+                "es": "Cena"
+              }
+            },
+            {
+              "value": "side",
+              "label": {
+                "en": "Side",
+                "fr": "Accompagnement",
+                "de": "Beilage",
+                "es": "Acompañamiento"
+              }
+            },
+            {
+              "value": "snack",
+              "label": {
+                "en": "Snack",
+                "fr": "Goûter",
+                "de": "Zwischenmahlzeit",
+                "es": "Merienda"
+              }
+            },
+            {
+              "value": "drink",
+              "label": {
+                "en": "Drink",
+                "fr": "Boisson",
+                "de": "Getränk",
+                "es": "Bebida"
+              }
+            },
+            {
+              "value": "dessert",
+              "label": {
+                "en": "Dessert",
+                "fr": "Dessert",
+                "de": "Nachspeise",
+                "es": "Postre"
+              }
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "key": "added",
+          "type": "boolean",
+          "label": {
+            "en": "Recipe added",
+            "fr": "Recette ajoutée",
+            "de": "Rezept hinzugefügt",
+            "es": "Receta añadida"
+          }
+        },
+        {
+          "key": "recipe",
+          "type": "string",
+          "label": {
+            "en": "Recipe",
+            "fr": "Recette",
+            "de": "Rezept",
+            "es": "Receta"
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date (YYYY-MM-DD)",
+            "fr": "Date (AAAA-MM-JJ)",
+            "de": "Datum (JJJJ-MM-TT)",
+            "es": "Fecha (AAAA-MM-DD)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "get_meals",
+      "label": {
+        "en": "Get the meals of a day",
+        "fr": "Lire les repas d'un jour",
+        "de": "Mahlzeiten eines Tages lesen",
+        "es": "Leer las comidas de un día"
+      },
+      "description": {
+        "en": "The menu of a day from the Mealie meal plan, to put in a message.",
+        "fr": "Le menu d'un jour du planning Mealie, à mettre dans un message.",
+        "de": "Das Menü eines Tages aus dem Essensplan von Mealie, für eine Nachricht.",
+        "es": "El menú de un día del planificador de Mealie, para ponerlo en un mensaje."
+      },
+      "timeout_seconds": 15,
+      "fields": [
+        {
+          "key": "day",
+          "type": "select",
+          "label": {
+            "en": "Day",
+            "fr": "Jour",
+            "de": "Tag",
+            "es": "Día"
+          },
+          "required": true,
+          "default": "today",
+          "options": [
+            {
+              "value": "today",
+              "label": {
+                "en": "Today",
+                "fr": "Aujourd'hui",
+                "de": "Heute",
+                "es": "Hoy"
+              }
+            },
+            {
+              "value": "tomorrow",
+              "label": {
+                "en": "Tomorrow",
+                "fr": "Demain",
+                "de": "Morgen",
+                "es": "Mañana"
+              }
+            },
+            {
+              "value": "day_after_tomorrow",
+              "label": {
+                "en": "Day after tomorrow",
+                "fr": "Après-demain",
+                "de": "Übermorgen",
+                "es": "Pasado mañana"
+              }
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "key": "breakfast",
+          "type": "string",
+          "label": {
+            "en": "Breakfast",
+            "fr": "Petit-déjeuner",
+            "de": "Frühstück",
+            "es": "Desayuno"
+          }
+        },
+        {
+          "key": "lunch",
+          "type": "string",
+          "label": {
+            "en": "Lunch",
+            "fr": "Déjeuner",
+            "de": "Mittagessen",
+            "es": "Comida"
+          }
+        },
+        {
+          "key": "dinner",
+          "type": "string",
+          "label": {
+            "en": "Dinner",
+            "fr": "Dîner",
+            "de": "Abendessen",
+            "es": "Cena"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Every meal of the day",
+            "fr": "Tous les repas du jour",
+            "de": "Alle Mahlzeiten des Tages",
+            "es": "Todas las comidas del día"
+          }
+        },
+        {
+          "key": "count",
+          "type": "number",
+          "label": {
+            "en": "Meals planned",
+            "fr": "Repas prévus",
+            "de": "Geplante Mahlzeiten",
+            "es": "Comidas previstas"
+          }
+        }
+      ]
+    },
+    {
+      "key": "get_shopping_list",
+      "label": {
+        "en": "Get a shopping list",
+        "fr": "Lire une liste de courses",
+        "de": "Einkaufsliste lesen",
+        "es": "Leer una lista de la compra"
+      },
+      "description": {
+        "en": "The items still to buy on a list, to send in a message.",
+        "fr": "Les articles encore à acheter sur une liste, à envoyer dans un message.",
+        "de": "Die noch zu kaufenden Einträge einer Liste, für eine Nachricht.",
+        "es": "Los artículos aún por comprar de una lista, para enviarlos en un mensaje."
+      },
+      "timeout_seconds": 15,
+      "fields": [
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Shopping list",
+            "fr": "Liste de courses",
+            "de": "Einkaufsliste",
+            "es": "Lista de la compra"
+          },
+          "description": {
+            "en": "Its name in Mealie. Empty: the first list created.",
+            "fr": "Son nom dans Mealie. Vide : la première liste créée.",
+            "de": "Der Name der Liste in Mealie. Leer: die zuerst erstellte Liste.",
+            "es": "Su nombre en Mealie. Vacío: la primera lista creada."
+          },
+          "placeholder": {
+            "en": "e.g. Groceries",
+            "fr": "ex. Courses",
+            "de": "z. B. Einkäufe",
+            "es": "p. ej. Compras"
+          },
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "items",
+          "type": "string",
+          "label": {
+            "en": "Items to buy, comma separated",
+            "fr": "Articles à acheter, séparés par des virgules",
+            "de": "Einträge zu kaufen, durch Kommas getrennt",
+            "es": "Artículos por comprar, separados por comas"
+          }
+        },
+        {
+          "key": "to_buy",
+          "type": "number",
+          "label": {
+            "en": "Items to buy",
+            "fr": "Articles à acheter",
+            "de": "Einträge zu kaufen",
+            "es": "Artículos por comprar"
+          }
+        },
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Shopping list",
+            "fr": "Liste de courses",
+            "de": "Einkaufsliste",
+            "es": "Lista de la compra"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "meal_plan",
+      "label": {
+        "en": "Meal plan",
+        "fr": "Menu",
+        "de": "Speiseplan",
+        "es": "Menú"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Today's meals or the next seven days, and a button to plan a recipe.",
+        "fr": "Les repas du jour ou des sept jours à venir, et un bouton pour prévoir une recette.",
+        "de": "Die Mahlzeiten von heute oder der nächsten sieben Tage, und ein Knopf zum Planen.",
+        "es": "Las comidas de hoy o de los próximos siete días, y un botón para planificar."
+      },
+      "icon": "calendar",
+      "action_timeout_seconds": 20,
+      "settings": [
+        {
+          "key": "period",
+          "type": "select",
+          "label": {
+            "en": "Period",
+            "fr": "Période",
+            "de": "Zeitraum",
+            "es": "Periodo"
+          },
+          "required": false,
+          "default": "today",
+          "options": [
+            {
+              "value": "today",
+              "label": {
+                "en": "Today",
+                "fr": "Aujourd'hui",
+                "de": "Heute",
+                "es": "Hoy"
+              }
+            },
+            {
+              "value": "week",
+              "label": {
+                "en": "Next 7 days",
+                "fr": "7 prochains jours",
+                "de": "Nächste 7 Tage",
+                "es": "Próximos 7 días"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "shopping_list",
+      "label": {
+        "en": "Shopping list",
+        "fr": "Liste de courses",
+        "de": "Einkaufsliste",
+        "es": "Lista de la compra"
+      },
+      "description": {
+        "en": "The items still to buy on a list, to add or check from the dashboard.",
+        "fr": "Les articles encore à acheter sur une liste, à ajouter ou cocher du tableau de bord.",
+        "de": "Die noch zu kaufenden Einträge einer Liste, vom Dashboard aus ergänzen oder abhaken.",
+        "es": "Los artículos por comprar de una lista, para añadir o marcar desde el panel."
+      },
+      "icon": "shopping-cart",
+      "action_timeout_seconds": 20,
+      "settings": [
+        {
+          "key": "list",
+          "type": "string",
+          "label": {
+            "en": "Shopping list",
+            "fr": "Liste de courses",
+            "de": "Einkaufsliste",
+            "es": "Lista de la compra"
+          },
+          "description": {
+            "en": "Its name in Mealie. Empty: the first list created.",
+            "fr": "Son nom dans Mealie. Vide : la première liste créée.",
+            "de": "Der Name der Liste in Mealie. Leer: die zuerst erstellte Liste.",
+            "es": "Su nombre en Mealie. Vacío: la primera lista creada."
+          },
+          "placeholder": {
+            "en": "e.g. Groceries",
+            "fr": "ex. Courses",
+            "de": "z. B. Einkäufe",
+            "es": "p. ej. Compras"
+          },
+          "required": false
+        }
+      ]
     }
   ]
 }

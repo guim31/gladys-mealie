@@ -16,8 +16,9 @@ its only runtime dependency. It started from the official JavaScript template.
 ```bash
 npm install
 npm test                                  # node --test, the built-in runner
-node --test test/devices.test.js          # one file
-node --test --test-name-pattern "plug"    # tests whose name matches
+node --test test/hub.test.js              # one file
+node --test --test-name-pattern "milk"    # tests whose name matches
+MEALIE_URL=http://127.0.0.1:9925 MEALIE_TOKEN=... npm run test:real   # a real Mealie
 npm run lint                              # ESLint
 npm run format:check                      # Prettier, as the CI runs it
 npm run format                            # Prettier, fix in place
@@ -31,16 +32,23 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
+index.js                          SDK wiring only: src/app.js registers the handlers before connect()
+src/app.js                        every SDK handler -> the hub (also used by the tests)
+src/hub.js                        reading timer (interval + midnight), states, badge, status, operations
+src/devices.js                    one device per household: identity, features, names (4 languages), values
+src/mealie/client.js              REST API of Mealie 2.x+ with the API token, errors by kind
+src/mealie/model.js               days in the Gladys time zone, meals by day, item names and matching
+src/mealie/http.js                node:http/https request (self-signed certificates on request)
 src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+src/widgets.js                    dashboard widgets `meal_plan` and `shopping_list` (manifest `widgets`)
+src/texts.js                      connection, error, report, meal, day and action texts (4 languages)
+src/problems.js                   repeated failures logged once, and once when they end
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (en and fr mandatory)
 test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+                                  and helpers/fakeMealie.js (seeded with test/fixtures/mealie)
+test/real.test.js                 `npm run test:real`: against a real Mealie (skipped without MEALIE_URL)
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +78,10 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German and Spanish: action
+  messages, widget content, feature names, scene outputs, manifest texts, and
+  `docs/en.md`, `docs/fr.md`, `docs/de.md`, `docs/es.md`, kept in sync
+  (`test/i18n.test.js` checks the languages and the doc sections).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -197,6 +207,61 @@ code de ce dépôt. Compléter ce fichier quand un nouveau piège est découvert
 - Les filtres de scène ne font qu'égalité et appartenance : un seuil reste le travail d'un capteur.
 - **Les clés de widgets, de déclencheurs et d'actions sont figées une fois publiées.**
 - `gladys_version` `>=5.1.0` dès qu'il y a widgets, déclencheurs ou actions de scène.
+
+## Mealie (propre à ce dépôt)
+
+- **API visée : Mealie 2.x et plus** (`/api/households/...`, les foyers ont remplacé les groupes de la
+  1.x). Jeton d'API `Authorization: Bearer`, créé dans Mealie (profil → Jetons de l'API) ; il agit
+  avec les droits de son utilisateur, sur le foyer de cet utilisateur. `GET /api/app/about` répond
+  **sans jeton** (version), `GET /api/users/self` donne `householdId` : absent en 1.x, d'où l'erreur
+  « Mealie 2.0 ou plus récent ». Une build de développement répond `version: "develop"`.
+- **Identité de l'appareil : `householdId`**, jamais l'adresse ; un compteur par liste, clé
+  `list_<id de la liste>`. Une liste créée dans Mealie ajoute une fonctionnalité (« Mettre à jour »).
+- **Le `PUT /api/households/shopping/items/{id}` remplace l'article entier** : un corps partiel
+  (`{ checked: true }` + `shoppingListId`) vide la note, l'aliment et l'unité. Toujours relire
+  l'article (`GET`) et le renvoyer entier. Vérifié sur un vrai Mealie 3.28.
+- Un article ajouté avec `quantity: 0` s'affiche « Lait » ; sans quantité (défaut 1) Mealie affiche
+  « 1 Lait ». `display` contient la quantité : pour nommer un article, prendre `food.name`, sinon
+  `note`.
+- Les articles à acheter de toutes les listes en **une requête** :
+  `GET /api/households/shopping/items?perPage=-1&queryFilter=checked=false`. Sans `orderBy`,
+  l'ordre est celui de création inverse ; `position` vaut 0 pour tout article créé par l'API.
+- **Repas `snack`, `drink`, `dessert` : Mealie 3.7 et plus** (`PlanEntryType`, vérifié par
+  `git show v3.6.0` / `v3.7.0`) ; un Mealie plus ancien répond 422. `POST .../mealplans/random`
+  répond 404 quand aucune recette ne correspond aux règles du planning.
+- La recherche `GET /api/recipes?search=` ignore les accents (« boeuf » trouve « Bœuf
+  bourguignon »).
+- Les dates du planning sont des dates simples : « aujourd'hui » se calcule dans le fuseau `TZ` de
+  Gladys, et le minuteur relit juste après minuit.
+- Aucun quota d'API côté Mealie. Pas de déclencheur de scène : ce qui change est un état de
+  l'appareil (pas de doublon).
+- Options d'un `select` dans un formulaire de widget : `label` multi-langue obligatoire (avec `en`),
+  même pour un nom d'article venu de Mealie (`{ en: nom }`).
+- Garde du « Sie » allemand : « Ihr » possessif (« son nom », pour une liste) est aussi refusé par
+  `test/i18n.test.js` ; tourner la phrase autrement (« Der Name der Liste »).
+
+## Vérifié sur un vrai Mealie
+
+Le 14/10/2026, Mealie lancé depuis ses sources avec SQLite (`uv sync` sous Python 3.14 pour la 3.28,
+il faut `libldap2-dev` et `libsasl2-dev` pour `python-ldap` ; Poetry 1.8 sous Python 3.12 pour la
+2.0.0, lancée par `uvicorn mealie.app:app` depuis la racine), rempli par son API (4 recettes, une
+semaine de planning avec recettes et notes, deux listes, un article avec aliment, unité et note).
+
+- `npm run test:real` (lecture, puis écriture avec `MEALIE_WRITE=1`) passe contre **Mealie 3.28
+  (develop) et 2.0.0**, et contre la 3.28 derrière **HTTPS auto-signé** (refusé sans l'option,
+  accepté avec).
+- **Image Docker** lancée avec les contraintes du bac à sable (`--cap-drop ALL --security-opt
+no-new-privileges --read-only --memory 256m --pids-limit 256`, volume `/data`, réseau en pont) :
+  connexion, appareil, états, widgets validés, ajout et cochage contre le vrai Mealie ; ~19 Mo au
+  repos sans Gladys, reconnexion du SDK en backoff, sortie 0 sur SIGTERM, jeton jamais dans les
+  journaux.
+- Non vérifié : une vraie instance Gladys (rendu des widgets et de leurs formulaires, éditeur de
+  scènes, variables `{{0.0.dinner}}` dans un message), Mealie avec PostgreSQL, un proxy inverse
+  avec sous-chemin, des utilisateurs OIDC ou LDAP.
+- Dans une session de code : `dockerd` se lance (`sudo` disponible) ; `public.ecr.aws` répond 429
+  aux pulls de la session (tirer `mirror.gcr.io/library/node:24-alpine` et le re-taguer) et `apk`
+  n'atteint pas les miroirs Alpine pendant un build : pour éprouver l'exécution, une image de test
+  avec les `node_modules` de production installés sur l'hôte suffit (sans toucher au `Dockerfile`).
 
 ## Store
 

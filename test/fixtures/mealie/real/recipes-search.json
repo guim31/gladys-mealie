@@ -1,0 +1,40 @@
+{
+  "page": 1,
+  "per_page": 10,
+  "total": 1,
+  "total_pages": 1,
+  "items": [
+    {
+      "id": "4d54b6bb-8ef4-4215-8e69-fe1feb1d7ab8",
+      "userId": "4fcf9988-f9eb-43c6-bdf1-e1aa78c75ba9",
+      "householdId": "1c3daafc-12d0-408e-a640-6f26b4e1fab4",
+      "groupId": "35d8ed4f-9a94-4d96-b9d3-a6b0ce372bf9",
+      "name": "Quiche lorraine",
+      "slug": "quiche-lorraine",
+      "image": null,
+      "recipeServings": 0.0,
+      "recipeYieldQuantity": 0.0,
+      "recipeYield": null,
+      "totalTime": null,
+      "prepTime": null,
+      "cookTime": null,
+      "performTime": null,
+      "totalTimeSeconds": null,
+      "prepTimeSeconds": null,
+      "performTimeSeconds": null,
+      "description": "",
+      "recipeCategory": [],
+      "tags": [],
+      "tools": [],
+      "rating": null,
+      "orgURL": null,
+      "dateAdded": "2026-10-14",
+      "dateUpdated": "2026-10-14T19:15:20.766000+00:00",
+      "createdAt": "2026-10-14T19:15:20.767128+00:00",
+      "updatedAt": "2026-10-14T19:15:20.767129+00:00",
+      "lastMade": null
+    }
+  ],
+  "next": null,
+  "previous": null
+}
