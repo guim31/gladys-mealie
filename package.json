@@ -1,6 +1,6 @@
 {
   "name": "gladys-mealie",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Gladys Assistant integration for Mealie: meal plan and shopping lists as a device, scene actions and dashboard widgets.",
   "type": "module",

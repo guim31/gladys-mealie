@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-14
+
 ### Added
 
 - One Gladys device per Mealie household, proposed in the Discover tab:
@@ -32,4 +34,5 @@ the notes of the version's GitHub Release.
 - Every text in English, French, German and Spanish, and the documentation in
   the four languages.
 
-[Unreleased]: https://github.com/guim31/gladys-mealie/commits/main
+[Unreleased]: https://github.com/guim31/gladys-mealie/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/guim31/gladys-mealie/releases/tag/v1.0.1
